@@ -103,9 +103,10 @@ class PowerPi(Daemon):
                                                   duration)
         elif state == 'depleted':
             msg['Subject'] = 'ALERT: Backup Battery Depleted'
-            text = 'A loss of power occurred on ' + event_date + ' at ' + event_time + '.'
-            text += ' Outage duration has been ' + duration + '.'
-            text += ' Backup battery of power monitor has been depleted and the system will now shutdown.'
+            text = 'A loss of power occurred on {} at {}. Outage duration has been {} . \
+            Backup battery of power monitor has been depleted and the system will now shutdown.'.format(event_date,
+                                                                                                        event_time,
+                                                                                                        duration)
 
         body = MIMEText(text, 'plain')
 
@@ -118,7 +119,6 @@ class PowerPi(Daemon):
 
     ###############################################################################
     def notify_sms(self, state, timestamp):
-        msg = ''
         gprs = Sim900(Serial("/dev/ttyAMA0", baudrate=115200, timeout=0), delay=0.5)
         current_timestamp = datetime.datetime.now()
         current_date = str(current_timestamp).split('.')[0].split(' ')[0]
@@ -126,22 +126,28 @@ class PowerPi(Daemon):
         event_date = str(timestamp).split('.')[0].split(' ')[0]
         event_time = str(timestamp).split('.')[0].split(' ')[1]
         duration = str((current_timestamp - timestamp)).split('.')[0]
+        text = ''
 
         if state == 'lost':
-            msg = 'A loss of power occurred on ' + event_date + ' at ' + event_time + '.'
-            msg += ' Outage duration has been ' + duration + '.'
+            text = 'A loss of power occurred on {} at {}. Outage duration has been {}.'.format(event_date,
+                                                                                               event_time,
+                                                                                               duration)
         elif state == 'restored':
-            msg = 'Power has been restored. Outage began on ' + event_date + ' at ' + event_time
-            msg += ' and ended on ' + current_date + ' at ' + current_time + '.'
-            msg += ' Total outage duration was ' + duration + '.'
+            text = 'Power has been restored. Outage began on {} at {} and ended on {} at {}. \
+            Total outage duration was {}.'.format(event_date,
+                                                  event_time,
+                                                  current_date,
+                                                  current_time,
+                                                  duration)
         elif state == 'depleted':
-            msg = 'A loss of power occurred on ' + event_date + ' at ' + event_time + '.'
-            msg += ' Outage duration has been ' + duration + '.'
-            msg += ' Backup battery of power monitor has been depleted and the system will now shutdown.'
+            text = 'A loss of power occurred on {} at {}. Outage duration has been {} . \
+            Backup battery of power monitor has been depleted and the system will now shutdown.'.format(event_date,
+                                                                                                        event_time,
+                                                                                                        duration)
 
         for number in self._NUMBER_LIST:
-            gprs.send_cmd('AT+CMGS="' + number + '"')
-            gprs.send_cmd(msg)
+            gprs.send_cmd('AT+CMGS="{}"'.format(number))
+            gprs.send_cmd(text)
             gprs.send_cmd(Sim900.CTRL_Z)
 
             time.sleep(3)  # sim900 was not able to keep up if faster than this
@@ -149,7 +155,7 @@ class PowerPi(Daemon):
 
 ################################################################################
 if "__main__" == __name__:
-    daemon = PowerPi('/srv/powerpi/powerpi.pid')
+    daemon = PowerPi('power_pi.pid')
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
             daemon.start()
