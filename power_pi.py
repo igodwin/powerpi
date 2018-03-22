@@ -29,8 +29,8 @@ class PowerPi(Daemon):
         failure = False
         last_notify = datetime.datetime.now() - datetime.timedelta(days=1)
         event_timestamp = None
-        logger = logging.getLogger('powerpi')
-        handler = logging.FileHandler('/srv/powerpi/powerpi.log')
+        logger = logging.getLogger('power_pi')
+        handler = logging.FileHandler('power_pi.log')
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
         handler.setFormatter(formatter)
